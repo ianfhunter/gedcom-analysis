@@ -1,7 +1,7 @@
 from gedcom.element.individual import IndividualElement
 from gedcom.parser import Parser
 import gedcom.tags as tags
-
+import datetime
 
 
 
@@ -175,6 +175,36 @@ def loose_cousins(ged, tree, child=None):
         pc += 1
 
 
+def established_missing_info(ged, tree):
+    e = tree["ref"]
+
+    parents = tree["parents"]
+   
+    if e.get_birth_year() == -1:
+        print("Unknown Birth Year for", get_name(e))
+    if e.get_death_year() == -1:
+        if datetime.datetime.now().year - e.get_birth_year() > 100:
+             print("Unknown Death Year for", get_name(e))
+    pc = 0
+    for p in parents:
+        if p == []:
+            continue
+        established_missing_info(ged, p)
+
+def missing_on_census(ged, tree):
+    e = tree["ref"]
+
+    c = e.get_census_data()
+    if c != []:
+        print(c)
+    parents = tree["parents"]
+   
+    for p in parents:
+        if p == []:
+            continue
+        missing_on_census(ged, p)
+        
+        
 def stats(ged, tree):
 
     print("==== Centuries ====")
@@ -193,12 +223,19 @@ def stats(ged, tree):
 
     print("==== Brick Walls ====")
 
-    b = brick_walls(ged, tree)
+    brick_walls(ged, tree)
 
     print("==== Loose Branches ====")
 
-    b = loose_cousins(ged, tree)
+    loose_cousins(ged, tree)
 
+    print("==== Missing Info on Established People ====")
+    established_missing_info(ged, tree)
+
+    #print("==== Missing on Census ====")
+    #missing_on_census(ged, tree)
+
+    print("==== End Report ====")
 
 if __name__ == "__main__":
     file_path = '/home/ian/Windows/Ged/test.ged'
